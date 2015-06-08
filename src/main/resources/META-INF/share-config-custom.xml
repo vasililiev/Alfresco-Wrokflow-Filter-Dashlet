@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alfresco-config>
+	<!-- <config evaluator="string-compare" condition="DocLibCustom">
+		<dependencies>
+			<js src="components/documentlibrary/workflow-search.js" />
+		</dependencies>
+	</config> -->
+	
+    <!-- Disable CSRF completely for now -->
+    <!-- It seems Share has issues on 4.2.x with the embedded tomcat and CSRFPolicy -->
+    <config evaluator="string-compare" condition="CSRFPolicy" replace="true">
+	<filter/>
+    </config>
+</alfresco-config>

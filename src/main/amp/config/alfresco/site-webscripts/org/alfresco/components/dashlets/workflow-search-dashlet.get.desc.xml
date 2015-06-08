@@ -1,0 +1,6 @@
+<webscript>
+	<shortname>Workflow Search</shortname>
+	<description>Displays all workflows, and a possibillity to sort them</description>
+	<family>dashlet</family>
+	<url>/components/dashlets/search-workflow</url>
+</webscript>

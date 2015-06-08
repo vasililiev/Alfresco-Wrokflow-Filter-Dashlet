@@ -1,0 +1,4 @@
+This dashlet is property of Neocom AD - 1000 Skopje, Republic of Macedonia
+Developers:
+-Vasil Iliev:      vasil.iliev@neocom.com.mk
+-Irena Ilievska    irena.ilivska@neocom.com.mk
