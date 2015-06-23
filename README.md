@@ -12,6 +12,7 @@ The dashlets features:
  <li>Works with all workflows, native and custom</li>
  <li>Initially, it sorts the tasks by date</li>
  <li>Better representation of <strong>assigned</strong> and <strong>done</strong> tasks</li>
+ <li>Complete <strong>all</strong> tasks which are returned for verification only by click of a button</li>
  <li>Filtering through all tasks by:
    <ol>
      <li>Workflow message</li>
@@ -27,6 +28,8 @@ The dashlets features:
    </ul> 
 </li>
 </ul>
+Provides autocomplete suggestions for initiator username when filtering by initiator.
+With the new version, the dashlet is divided on two tabs which lets the user filter through <strong>assigned</strong> tasks and <strong>done</strong> tasks.
 You can install them by using standard [Alfresco deployment tools](http://docs.alfresco.com/community/tasks/dev-extensions-tutorials-simple-module-install-amp.html)
 
 Building the artifacts
