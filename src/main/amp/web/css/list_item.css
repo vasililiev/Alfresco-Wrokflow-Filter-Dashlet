@@ -121,19 +121,50 @@ span.property:first-child {
 	border-width: 1px 1px !important;
 }
 
+.padding-top-5 {
+	padding-top: 5px;
+}
+
+.padding-bottom-12 {
+	padding-bottom: 12px;
+}
+.font-size-small {
+	font-size: 0.75em;
+}
+
 .placeholder {
 	color: #92856C;
 }
 
+.tooltip {
+	display: none;
+}
+
+.completeAllTasks {
+    width: 15px;
+    height: 20px;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEX//////9lISENGRkEAAABGRkIsLC3T07FCQj9FRUFEREBHR0I2NjUzMzIxMTEyMjIzMzMzMzIxMTEyMjI1NTRGRkFJSUQ1NTQwMDAwMDAxMTAwMDAwMDAwMDAxMTAwMDAwMDAzMzJSUktlZVoyMjEwMDAwMDAxMTAwMDAwMDAxMTAwMDAxMTFoaFwyMjExMTE0NDMyMjEyMjEyMjIxMTExMTFnZ1wxMTExMTExMTExMTExMTExMTExMTHFxacyMjExMTFBQT47OznHx6gzMzIxMTExMTExMTExMTExMTExMTExMTExMTExMTE3NzYyMjExMTExMTExMTHGxqgzMzIyMjIyMjIyMjIyMjExMTHKyqthYVc1NTRCQj5EREA3NzYxMTExMTEwMDAxMTGgoIoxMTExMTE4ODcxMTE2NjU0NDQ0NDQ0NDMyMjExMTE1NTRLS0ZbW1IzMzMzMzIxMTEwMDAxMTFGRkI3NzYxMTAxMTExMTExMTAxMTA0NDNNTUeW+Y+nAAAAgHRSTlMAAAAAAAAAAAAAAwMKFlgaFRRXHQwDAxCasnep09J1pa4dAgErzquEoqaCoUUBLWEVLzEmU0EBUD8xTFZEPgEsTwQFARw0PTZRODlAM0MHKlpZSAEZJCkoKUcBAQ4EBAtoZp47ATdbCU4MDxESLmILAwIYGjqQXwMJcXBveW0MAgO/+60AAAABYktHRACIBR1IAAAACXBIWXMAAABIAAAASABGyWs+AAAA5klEQVQY02Pg4uLm4eXjFxAQFBIWEeXiYuASE5eQlJKWkZWUk1dQVAIKKKuoqqlrqKlpamnL6DAABXT19A30VAwNDY2MTUwZgQJmKuYWllZC1tZCOja2diABewdHJyZmFhZWNltbZ7CAuYurm46NjY67DVTAw9PYy9Tb29THFyrgwO7HwYmsxcPfzSEgMDAgSMc2GGKGfUhoWLiKT0SkbRRES3RMbFx8QEJiUnIK2B0eqd5piR4B6RmJmdwQFcJZ2Tm5HjZ5+QVxQIFCY/2i4uKiktIyIB8kUF5hXVlVVV1TW1fPBQQAYIA16MCzVDIAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMDYtMjJUMDQ6MzQ6NTMtMDU6MDA3j72DAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE1LTA2LTIyVDA0OjM0OjUzLTA1OjAwRtIFPwAAAABJRU5ErkJggg==');
+    background-repeat: no-repeat;
+    margin: 2px;
+    background-position-y: 3px;
+}
+
+.completeAllTasks:hover {
+	cursor: pointer;
+}
+
+/*****************************************/
+/*******AUTOCOMPLETE SUGGESTION***********/
+/*****************************************/
 div#autocomplete-container {
-    width: 197px;
-    max-height: 150px;
-    position: absolute;
-    overflow-y: auto;
-    padding: 0px;
-    border: 1px solid #cdcdcd;
-    z-index: 9;
-    background-color: #FFF;
+	width: 197px;
+	max-height: 150px;
+	position: absolute;
+	overflow-y: auto;
+	padding: 0px;
+	border: 1px solid #cdcdcd;
+	z-index: 9;
+	background-color: #FFF;
 }
 
 ul#suggestions {
@@ -149,4 +180,48 @@ ul#suggestions li {
 ul#suggestions li:hover {
 	background-color: #cdcdcd !important;
 	cursor: pointer;;
+}
+
+/*****************************************/
+/*********TAB STYLE***********************/
+/*****************************************/
+.title-wrap {
+	padding: 0px !important;
+}
+
+.tab {
+	border-top-left-radius: 6px !important;
+	border-top-right-radius: 6px !important;
+	width: 48.58%;
+	padding: 5px !important;
+	display: inline-block;
+}
+
+.active-tab-assigned {
+	border-right: 1px solid #ccc;
+	background-color: #fff;
+	font-weight: bold;
+}
+
+.active-tab-done {
+	border-left: 1px solid #ccc;
+	background-color: #fff;	
+	font-weight: bold;
+}
+
+.tab:hover {
+	cursor: pointer; 
+}
+
+/*****************************************/
+/***********BALLOON OVERRIDE**************/
+/*****************************************/
+.balloon:before {
+	bottom: -6px !important;
+	left: 0px !important;
+}
+
+.balloon:after {
+	bottom: -6px !important;
+	left: 0px !important;
 }

@@ -32,7 +32,8 @@ if (typeof Extras == "undefined" || !Extras) {
 	var selectedFilter = "description";
 	//Selected workflow id's
 	var indexArray = [];
-	
+	//Selected tab
+	var tab = "assigned";
 
     // Set webscript template
     var webscript = YAHOO.lang.substitute("api/task-instances?authority={authority}&properties={properties}",
@@ -43,6 +44,12 @@ if (typeof Extras == "undefined" || !Extras) {
     
     var autoCompleteItem = '<li id="{username}" onclick="Extras.selectUsername(this.id)">{username}<span class="placeholder"> ({name})</span></li>';
 	
+    //Set webscript for completed tasks
+    var tasksDoneAPI = YAHOO.lang.substitute("api/task-instances?authority={authority}&properties={properties}&exclude=wcmwf:*&pooledTasks=false&state=COMPLETED&pooledTasks=false&state=COMPLETED",
+    {
+        authority: encodeURIComponent(Alfresco.constants.USERNAME),
+        properties: ["bpm_priority", "bpm_status", "bpm_dueDate", "bpm_description"].join(",")
+    });
 	/**
 	 * ConsoleFilterWorkflows constructor.
 	 * 
@@ -122,6 +129,10 @@ if (typeof Extras == "undefined" || !Extras) {
          // Call super-class onReady() method
           Extras.FilterWorkflows.superclass.onReady.call(this);
           Extras.renderCalendar();
+
+		  completeTasks_balloon = Alfresco.util.createBalloon("balloon_completeTasks", {width:"10em"});
+		  completeTasks_balloon.text(YAHOO.util.Dom.get("tooltip_completeTasks").innerHTML);
+		  
          //Set event listeners Toolbar 1
           YAHOO.util.Event.addListener(YAHOO.util.Dom.get("search-workflows-button"), "click", Extras.doFilter);
           YAHOO.util.Event.addListener(YAHOO.util.Dom.get("reset-workflows-button"), "click", Extras.getAllWorkflows);
@@ -133,6 +144,10 @@ if (typeof Extras == "undefined" || !Extras) {
           //Set event listeners Toolbar 2
           YAHOO.util.Event.addListener(YAHOO.util.Dom.get("sort-by-date"), "click", Extras.sortByDate);
           YAHOO.util.Event.addListener(YAHOO.util.Dom.get("sort-by-priority"), "click", Extras.sortByPriority);
+          
+          YAHOO.util.Event.addListener(YAHOO.util.Dom.get("balloon_completeTasks"), "mouseover", Extras.onCompleteTaskHover);
+          YAHOO.util.Event.addListener(YAHOO.util.Dom.get("balloon_completeTasks"), "mouseleave", Extras.onCompleteTaskBlur);
+          YAHOO.util.Event.addListener(YAHOO.util.Dom.get("balloon_completeTasks"), "click", Extras.displayPromptCompleteTask);
           
           //Get messages
           Extras.getTemplateMessages();
@@ -156,7 +171,8 @@ if (typeof Extras == "undefined" || !Extras) {
 		      			</div>\
 		      		</a>\
 		      	</div>';
-           
+
+          totalTasksMsg = YAHOO.util.Dom.get("totalWorkflows").innerHTML;
           //Send AJAX request to get all workflows
           Extras.getAllWorkflows(webscript);
 
@@ -167,10 +183,13 @@ if (typeof Extras == "undefined" || !Extras) {
 	/**
 	 * Sends an AJAX Request go retrieve all assigned workflows
 	 */
-	Extras.getAllWorkflows = function() {
+	Extras.getAllWorkflows = function(scriptToCall) {
+		if(typeof scriptToCall !== "string") {
+			scriptToCall = (tab == "assigned"? webscript : tasksDoneAPI);
+		}
 		Alfresco.util.Ajax.request(
 		{
-			url: Alfresco.constants.PROXY_URI + webscript,
+			url: Alfresco.constants.PROXY_URI + scriptToCall,
 			method: Alfresco.util.Ajax.GET,
 			responseContentType: Alfresco.util.Ajax.JSON,
 			successCallback:
@@ -256,7 +275,15 @@ if (typeof Extras == "undefined" || !Extras) {
 			"priority":msgArray[4],
 			"day":msgArray[5],
 			"days":msgArray[6],
-			"priority":msgArray[7]
+			"priority":msgArray[7],
+			"empty":msgArray[8],
+			"loading":msgArray[9],
+			"prompt_Title":msgArray[10],
+			"prompt_Text":msgArray[11],
+			"prompt_Yes":msgArray[12],
+			"prompt_No":msgArray[13],
+			"deleting":msgArray[14],
+			"error":msgArray[15]
 		};
 	};
 	
@@ -301,6 +328,11 @@ if (typeof Extras == "undefined" || !Extras) {
 	 */
 	Extras.showAllWorkflows = function() {
       	YAHOO.util.Dom.get("list-items").innerHTML = "";
+      	if(workflowsData.length == 0)
+      	{
+      		YAHOO.util.Dom.get("list-items").innerHTML = messages.empty;
+      		return;
+      	}
 		for(var i=0; i<workflowsData.length; i++)
         {
 	   		 var wf = workflowsData[i];
@@ -309,6 +341,7 @@ if (typeof Extras == "undefined" || !Extras) {
         }
 		filteredData = workflowsData;
 		indexArray = [];
+      	YAHOO.util.Dom.get("totalWorkflows").innerHTML = totalTasksMsg.replace("{0}",workflowsData.length);
 	};
 	
 	/**
@@ -411,6 +444,7 @@ if (typeof Extras == "undefined" || !Extras) {
 		default:
 			Extras.showAllWorkflows();
 		}
+      	YAHOO.util.Dom.get("totalWorkflows").innerHTML = totalTasksMsg.replace("{0}",filteredData.length);
 	};
 
 	/**
@@ -453,7 +487,7 @@ if (typeof Extras == "undefined" || !Extras) {
 	Extras.setWorkflowListElement = function(wf) {
     	var date = Extras.dateFromISO8601(wf.workflowInstance.startDate);
 		return YAHOO.lang.substitute(item,{
-      		 url: "/share/page/task-edit?taskId="+wf.id+"&amp;referrer=tasks",
+      		 url: Extras.getWorkflowURL(wf.id),
       		 isDone: Extras.getStatus(wf.title) != -1?"done":"pending",
       		 wfTitle: wf.workflowInstance.message == null? wf.workflowInstance.title : wf.workflowInstance.message,
       		 from: wf.workflowInstance.initiator.firstName + " " +wf.workflowInstance.initiator.lastName,
@@ -483,8 +517,18 @@ if (typeof Extras == "undefined" || !Extras) {
 		indexArray = [];
 	};
 	
+	/**
+	 * Populate autocomplete suggestions for initiators
+	 * This functions calls the People API and returns users 
+	 * containing the typed data
+	 */
 	Extras.getUsernames = function() {
    		var username = YAHOO.util.Dom.get("wfsearch-initiator-input").value;
+   		if(username == "")
+		{
+			YAHOO.util.Dom.get("autocomplete-container").style.display = "none";
+   			return;
+		}
    		Alfresco.util.Ajax.request(
 		{
 			url: Alfresco.constants.PROXY_URI + "api/people?sortBy=fullName&dir=asc&filter="+username+"&maxResults=50",
@@ -519,10 +563,14 @@ if (typeof Extras == "undefined" || !Extras) {
 		});
 	};
 	
+	/**
+	 * Select user event
+	 * Fills the input field with the selected username
+	 */
 	Extras.selectUsername = function(username) {
 		YAHOO.util.Dom.get("autocomplete-container").style.display = "none";
    		YAHOO.util.Dom.get("wfsearch-initiator-input").value = username;
-	}
+	};
 	
 	/**
 	 * Sort by date funtion
@@ -594,5 +642,147 @@ if (typeof Extras == "undefined" || !Extras) {
 			YAHOO.util.Dom.get("sort-by-priority").innerHTML = YAHOO.util.Dom.get("sort-by-priority").innerHTML.replace("▲","▼");
 			sortDirection.priority = "DESCENDING";
 		}
+	};
+	
+	/**
+	 * Returns the URL for the Workflow when an item is clicked
+	 * Since there are tabs, there should be a propper URL to acces Task Details
+	 */
+	Extras.getWorkflowURL = function(id) {
+		var url = "";
+		switch(tab){
+		case "assigned":
+			url = "/share/page/task-edit?taskId="+id+"&amp;referrer=tasks";
+			break;
+		case "done":
+			url = "/share/page/task-details?taskId="+id;
+			break;
+		default:
+			break;
+		}
+		return url;
+	};
+	
+	/**
+	 * OnTabChange event
+	 * It displays data for the selected tab
+	 */
+	Extras.changeTab = function(id) {
+		var tabs = YAHOO.util.Dom.get(id).parentNode.children;
+		tab = id;
+		YAHOO.util.Dom.get("list-items").innerHTML = messages.loading;
+		for(var i in tabs) {
+			tabs[i].className = "tab";
+		}
+		if(id == "assigned")
+		{
+			YAHOO.util.Dom.get("balloon_completeTasks").style.display = "block";
+			Extras.getAllWorkflows(webscript);
+		}
+		else if(id == "done")
+		{
+			YAHOO.util.Dom.get("balloon_completeTasks").style.display = "none";
+			Extras.getAllWorkflows(tasksDoneAPI);
+		}
+		YAHOO.util.Dom.get(id).className = (id == "done"?"tab active-tab-done":"tab active-tab-assigned");
 	}
+
+	/**
+	 * OnHover Show Balloon for complete all tasks
+	 */
+	Extras.onCompleteTaskHover = function() {
+		completeTasks_balloon.show();
+	};
+	
+	/**
+	 * OnMouseLeave event to hide the Balloon
+	 */
+	Extras.onCompleteTaskBlur = function() {
+		completeTasks_balloon.hide();
+	};
+	
+	/**
+	 * Display confirmations dialog for the user
+	 * to choose whether is sure to close all tasks
+	 */
+	Extras.displayPromptCompleteTask = function() {
+		Alfresco.util.PopupManager.displayPrompt({
+			title: messages["prompt_Title"],
+			text: messages["prompt_Text"],
+			buttons: [
+			{
+				text: messages["prompt_Yes"],
+				handler: function completeAllTasks() {
+					this.destroy();
+					waitDialog = Alfresco.util.PopupManager.displayMessage({
+						text: messages["deleting"],
+						spanClass: "wait",
+						modal:true,
+						displayTime: 0
+					});
+					Extras.completeAllTasks();
+				}
+			},
+			{
+				text: messages["prompt_No"],
+				handler: function cancel() {
+					this.destroy();
+				},
+				isDefault: true
+			}]
+		});
+	};
+	
+	/**
+	 * Send POST request to Workflow API for every task
+	 * which has or hasn't been filtered to end it
+	 */
+	Extras.completeAllTasks = function() {
+		var tasksForVerification = [];
+		for(var i=0; i<workflowsData.length; i++)
+        {
+	   		 var wf = workflowsData[i];
+	   		 //If it's completeted and sent for verification
+	   		 if(Extras.getStatus(wf.title) != -1)
+	   		 {
+	   			 tasksForVerification.push(wf);
+	   		 }
+        }
+		
+		requestsSent = tasksForVerification.length;
+		
+
+		for(var i=0; i<tasksForVerification.length; i++)
+        {
+	   		 var wf = tasksForVerification[i];
+	   		 Alfresco.util.Ajax.request({
+				url:Alfresco.constants.PROXY_URI + "/api/workflow/task/end/" + wf.id,
+				method: Alfresco.util.Ajax.POST,
+				successCallback:
+				{
+					fn: function(response) {
+						requestsSent--;
+						if(requestsSent == 0)
+						{
+							waitDialog.destroy();
+							Extras.getAllWorkflows(webscript);
+						}
+					},
+					scope: this
+				},
+				failureCallback:
+				{
+					fn: function(response) {
+						waitDialog.destroy();
+						waitDialog = Alfresco.util.PopupManager.displayMessage({
+							text: messages["error"],
+							displayTime: 2
+						});
+						errorOccurred=true;
+					},
+					scope: this
+				}
+			 });
+        }
+	};
 })();

@@ -2,8 +2,12 @@
    new Alfresco.widget.DashletResizer("${args.htmlid}", "${instance.object.id}");
    new Extras.FilterWorkflows("${args.htmlid}").setMessages(${messages});
 //]]></script>
-<div class="dashlet">
-   <div class="title">${msg("header")}</div>
+<div class="dashlet padding-bottom-12">
+   <div class="title-wrap title">
+	   <div id="assigned" class="tab active-tab-assigned" onclick="Extras.changeTab(this.id)">${msg("header.assigned")}</div>
+	   <div id="done" class="tab" onclick="Extras.changeTab(this.id)">${msg("header.done")}</div> 
+   </div>
+   <!-- <div class="title">${msg("header")}</div> -->
    <div class="toolbar flat-button">
    		<div class="align-left yui-button yui-menu-button">
 	   		<select id="properties" class="select-width-auto border-width-01">
@@ -44,11 +48,17 @@
    		</div>
    </div>
    <div class="toolbar flat-button">
-   		<div class="align-left yui-button yui-push-button search-icon border-width-0">
-   			<button id="sort-by-date" type="button">${msg("btn.sortbydate")} ▼</button>
+   		<div id="balloon_completeTasks" class="align-left completeAllTasks">
+   			<span id="tooltip_completeTasks" class="tooltip">${msg("tooltip.completeTasks")}</span>
    		</div>
    		<div class="align-left yui-button yui-push-button search-icon border-width-0">
-   			<button id="sort-by-priority" type="button">${msg("btn.sortbypriority")} ▼</button>
+   			<button id="sort-by-date" type="button">${msg("btn.sortbydate")} <span class="font-size-small">▼</span></button>
+   		</div>
+   		<div class="align-left yui-button yui-push-button search-icon border-width-0">
+   			<button id="sort-by-priority" type="button">${msg("btn.sortbypriority")} <span class="font-size-small">▼</span></button>
+   		</div>
+   		<div class="align-right padding-top-5 placeholder">
+   			<span id="totalWorkflows">${msg("workflows.total")}</span>
    		</div>
    </div>
    <div class="body scrollableList" <#if args.height??>style="height: ${args.height}px;"</#if>>
@@ -57,6 +67,6 @@
      </div>
    </div>
    <div id="list-item-messages" style="display:none; visbility: hidden;">
-   ${msg("wf.title")},${msg("wf.before")},${msg("wf.from")},${msg("wf.type")},${msg("wf.priority")},${msg("passed.day")},${msg("passed.days")},${msg("prop.priority")}
+   ${msg("wf.title")},${msg("wf.before")},${msg("wf.from")},${msg("wf.type")},${msg("wf.priority")},${msg("passed.day")},${msg("passed.days")},${msg("prop.priority")},${msg("workflows.empty")},${msg("workflows.loading")},${msg("prompt.title")},${msg("prompt.text")},${msg("prompt.yes")},${msg("prompt.no")},${msg("workflows.deleting")},${msg("workflows.error")}
    </div>
 </div>
